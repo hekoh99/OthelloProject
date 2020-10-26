@@ -42,9 +42,9 @@ void setStatus(int t, Status s) {
         if (turn == Turn::BLACK) {
             stones[t]->setImage("Images/black possible.png");
         }
-        else if (turn == Turn::WHITE){
+        else if (turn == Turn::WHITE) {
             stones[t]->setImage("Images/white possible.png");
-            }
+        }
         break;
 
     case Status::BLACK:
@@ -59,20 +59,20 @@ void setStatus(int t, Status s) {
 }
 
 void reverse(int t, Status s, int d) {
+    t += d;
+    while (state[t] != s) {
+        setStatus(t, s);
         t += d;
-        while (state[t] != s) {
-            setStatus(t, s);
-            t += d;
-        }
+    }
 }
 
 bool isPossible(int t, Purpose p) {
-    
+
     if (state[t] == Status::BLACK) return false;
     if (state[t] == Status::WHITE) return false;
-    if (t<=55 && state[t + 8] == Status::BLACK && turn == Turn::WHITE) {
-        for (int i = 16; t+i < 64; i += 8) {
-            if (state[t + i] == Status::WHITE) { 
+    if (t <= 55 && state[t + 8] == Status::BLACK && turn == Turn::WHITE) {
+        for (int i = 16; t + i < 64; i += 8) {
+            if (state[t + i] == Status::WHITE) {
                 if (p == Purpose::REVERSE) {
                     reverse(t, Status::WHITE, 8);
                 }
@@ -96,7 +96,7 @@ bool isPossible(int t, Purpose p) {
             else if (state[t + i] == Status::BLANK || state[t + i] == Status::POSSIBLE) break;
         }
     }
-    if (t%8 != 7 && t <= 54 && state[t + 9] == Status::BLACK && turn == Turn::WHITE) {
+    if (t % 8 != 7 && t <= 54 && state[t + 9] == Status::BLACK && turn == Turn::WHITE) {
         for (int i = 18; t + i < 64; i += 9) {
             if ((t + 9) % 8 == 7) break;
             if ((t + i) % 8 == 7 && state[t + i] != Status::WHITE) break;
@@ -156,7 +156,7 @@ bool isPossible(int t, Purpose p) {
             else if (state[t + i] == Status::BLANK || state[t + i] == Status::POSSIBLE) break;
         }
     }
-    if (t %8 != 7 && t >= 14 && state[t - 7] == Status::BLACK && turn == Turn::WHITE) {
+    if (t % 8 != 7 && t >= 14 && state[t - 7] == Status::BLACK && turn == Turn::WHITE) {
         for (int i = -14; t + i >= 0; i -= 7) {
             if ((t - 7) % 8 == 7) break;
             if ((t + i) % 8 == 7 && state[t + i] != Status::WHITE) break;
@@ -171,7 +171,7 @@ bool isPossible(int t, Purpose p) {
             else if (state[t + i] == Status::BLANK || state[t + i] == Status::POSSIBLE) break;
         }
     }
-    if (t%8 != 7 && t >= 14 && state[t - 7] == Status::WHITE && turn == Turn::BLACK) {
+    if (t % 8 != 7 && t >= 14 && state[t - 7] == Status::WHITE && turn == Turn::BLACK) {
         for (int i = -14; t + i >= 0; i -= 7) {
             if ((t - 7) % 8 == 7) break;
             if ((t + i) % 8 == 7 && state[t + i] != Status::BLACK) break;
@@ -212,7 +212,7 @@ bool isPossible(int t, Purpose p) {
             else if (state[t + i] == Status::BLANK || state[t + i] == Status::POSSIBLE) break;
         }
     }
-    if (t%8 != 0 && t >= 18 && state[t - 9] == Status::BLACK && turn == Turn::WHITE) {
+    if (t % 8 != 0 && t >= 18 && state[t - 9] == Status::BLACK && turn == Turn::WHITE) {
         for (int i = -18; t + i >= 0; i -= 9) {
             if ((t - 9) % 8 == 0) break;
             if ((t + i) % 8 == 0 && state[t + i] != Status::WHITE) break;
@@ -229,7 +229,7 @@ bool isPossible(int t, Purpose p) {
     }
     if (t % 8 != 0 && t >= 18 && state[t - 9] == Status::WHITE && turn == Turn::BLACK) {
         for (int i = -18; t + i >= 0; i -= 9) {
-            if ((t - 9) % 8 == 9) break;
+            if ((t - 9) % 8 == 0) break;
             if ((t + i) % 8 == 0 && state[t + i] != Status::BLACK) break;
             else if (state[t + i] == Status::BLACK) {
                 if (p == Purpose::REVERSE) {
@@ -273,7 +273,7 @@ bool isPossible(int t, Purpose p) {
         }
     }
     if (t % 8 != 0 && t <= 56 && state[t + 7] == Status::BLACK && turn == Turn::WHITE) {
-        for (int i = 14; t+i < 64; i += 7) {
+        for (int i = 14; t + i < 64; i += 7) {
             if ((t + 7) % 8 == 0) break;
             if ((t + i) % 8 == 0 && state[t + i] != Status::WHITE) break;
             else if (state[t + i] == Status::WHITE) {
@@ -339,6 +339,15 @@ void setScore() {
     cout << b << " " << w << endl;
 }
 
+int comTurn() {
+    for (int i = 0; i < 64; i++) {
+        if (state[i] == Status::POSSIBLE) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int main()
 {
 
@@ -347,36 +356,57 @@ int main()
     setGameOption(GameOption::GAME_OPTION_ROOM_TITLE, false);
 
     Gamescene = Scene::create("1", "Images/background.png");
-    
+
     for (int i = 0; i < 64; i++) {
-        stones[i] = Object::create("Images/blank.png", Gamescene, 40 + (i%8)* 80, 40 + (i/8)*80);
+        stones[i] = Object::create("Images/blank.png", Gamescene, 40 + (i % 8) * 80, 40 + (i / 8) * 80);
         stones[i]->setOnMouseCallback([&, i](ObjectPtr object, int x, int y, MouseAction action)->bool {
             if (state[i] == Status::POSSIBLE) {
                 if (turn == Turn::BLACK) {
-                    isPossible(i, Purpose::REVERSE);
-                    setStatus(i, Status::BLACK);
-                    turn = Turn::WHITE;
-                }
-                else {
-                    isPossible(i, Purpose::REVERSE);
-                    setStatus(i, Status::WHITE);
-                    turn = Turn::BLACK;
-                }
-                setScore();
-                setPossible();
-                if (countState(Status::POSSIBLE) == 0) {
-                    turn = turn == Turn::BLACK ? Turn::WHITE : Turn::BLACK;
-                    setPossible();
-                    if (countState(Status::POSSIBLE) == 0) {
-                        showMessage("end game");
-                    }
+                    isPossible(i, Purpose::REVERSE); // 돌 바꾸기
+                    setStatus(i, Status::BLACK); // 클릭한 곳에 돌 놓기
+                    setScore(); // 스코어 변경
+                    turn = Turn::WHITE; // 흰 돌로 차례 넘기기
+                    setPossible(); // 흰 돌 가능한 자리 체크
+
+                    auto timer = Timer::create(1.0f);
+                    timer->setOnTimerCallback([&](TimerPtr t)->bool {
+                        if (comTurn() != -1) {
+                            isPossible(comTurn(), Purpose::REVERSE);  // 돌 바꾸기
+                            setStatus(comTurn(), Status::WHITE); // 컴이 선택한 위치에 흰 돌 놓기
+                            setScore(); // 스코어 변경
+                            turn = Turn::BLACK; // 검은 돌로 차례 넘기기
+                            setPossible(); // 검은 돌 가능한 자리 체크
+
+                            if (countState(Status::POSSIBLE) == 0) {
+                                turn = Turn::WHITE;
+                                setPossible();
+                                if (countState(Status::POSSIBLE) == 0) {
+                                    showMessage("end game");
+                                }
+                                else {
+                                    t->set(1.0f);
+                                    t->start();
+                                }                                
+                            }
+                        }
+                        else if (comTurn() == -1) {
+                            turn = Turn::BLACK;
+                            setPossible();
+                            if (countState(Status::POSSIBLE) == 0){
+                                showMessage("end game");
+                            }
+                        }
+                         return true;
+                    });
+                    timer->start();
+                    
                 }
             }
             return true;
-        });
+            });
         state[i] = Status::BLANK;
     }
-    
+
     setStatus(27, Status::BLACK);
     setStatus(28, Status::WHITE);
     setStatus(35, Status::WHITE);
